@@ -1,0 +1,64 @@
+.area {
+  padding: 14px 20px;
+  border-top: 0.5px solid var(--border-light);
+  background: var(--bg-primary);
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.wrap {
+  flex: 1;
+  background: var(--bg-secondary);
+  border: 0.5px solid var(--border-medium);
+  border-radius: 10px;
+  display: flex;
+  align-items: flex-end;
+  padding: 8px 12px;
+  transition: border-color 0.15s;
+}
+
+.wrap:focus-within {
+  border-color: var(--red);
+}
+
+.textarea {
+  flex: 1;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'Syne', sans-serif;
+  font-size: 13.5px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  max-height: 110px;
+  min-height: 22px;
+}
+
+.textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: var(--red);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btn:hover:not(:disabled)  { background: var(--red-dark); }
+.btn:active:not(:disabled) { transform: scale(0.94); }
+
+.btn:disabled {
+  background: var(--border-light);
+  cursor: not-allowed;
+}

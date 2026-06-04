@@ -1,15 +1,16 @@
-import React from 'react'
 import styles from './VerdictCard.module.css'
 
 const CONFIG = {
   fake:       { icon: '✕', label: 'Fake News' },
   true:       { icon: '✓', label: 'Verdadeiro' },
-  unverified: { icon: '?', label: 'Não verificado' },
+  unverified: { icon: '?', label: 'Incerto' },
 }
 
 export default function VerdictCard({ statement, result }) {
   const { verdict, confidence, explanation, sources } = result
   const { icon, label } = CONFIG[verdict] || CONFIG.unverified
+  const isML = sources.includes('ML Model')
+  const showConfidence = isML && confidence > 75
 
   return (
     <div className={styles.wrapper}>
@@ -29,10 +30,12 @@ export default function VerdictCard({ statement, result }) {
               style={{ width: `${confidence}%` }}
             />
           </div>
-          <div className={styles.confLabel}>
-            <span>confiança</span>
-            <span className={styles.confValue}>{confidence}%</span>
-          </div>
+          {showConfidence && (
+            <div className={styles.confLabel}>
+              <span>confiança</span>
+              <span className={styles.confValue}>{confidence}%</span>
+            </div>
+          )}
           <div className={styles.sources}>
             {sources.map((s) => (
               <span key={s} className={styles.tag}>{s}</span>

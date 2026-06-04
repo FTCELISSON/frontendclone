@@ -1,94 +1,59 @@
 import { useState, useCallback } from 'react'
 
-const API_ENDPOINT = 'http://localhost:8000/check'
+const API_ENDPOINT = `${import.meta.env.VITE_API_URL}/v1/check`
 
-const MOCK_RESPONSES = [
-  {
-    keywords: ['vacina', 'infertilidade', 'autismo', 'microchip'],
-    verdict: 'fake',
-    confidence: 94,
-    explanation:
-      'Não há evidências científicas que sustentem essa afirmação. Múltiplos estudos revisados por pares e agências regulatórias internacionais (OMS, FDA, Anvisa) refutam essa relação. A alegação circula em redes sociais sem base factual.',
-    sources: ['OMS', 'Anvisa', 'The Lancet', 'PubMed'],
-  },
-  {
-    keywords: ['5g', 'vírus', 'coronavirus', 'coronavírus', 'radiação'],
-    verdict: 'fake',
-    confidence: 98,
-    explanation:
-      'Ondas de rádio não transportam nem ativam vírus. O coronavírus é um agente biológico e não pode ser transmitido por frequências eletromagnéticas. Essa narrativa foi amplamente desmentida por físicos e virologistas.',
-    sources: ['OMS', 'ICNIRP', 'Nature', 'BBC Verify'],
-  },
-  {
-    keywords: ['soja', 'exportador', 'brasil'],
-    verdict: 'true',
-    confidence: 89,
-    explanation:
-      'Correto. O Brasil é o maior produtor e exportador de soja do mundo desde 2012, superando os EUA. Dados da CONAB e do Ministério da Agricultura confirmam essa posição.',
-    sources: ['CONAB', 'USDA', 'Embrapa', 'Reuters'],
-  },
-  {
-    keywords: ['terra', 'plana'],
-    verdict: 'fake',
-    confidence: 99,
-    explanation:
-      'A Terra tem formato geoide (aproximadamente esférico), fato confirmado há séculos por astronomia, navegação, física e imagens espaciais. Não há qualquer evidência científica que suporte a hipótese da Terra plana.',
-    sources: ['NASA', 'ESA', 'INPE', 'Sociedade Astronômica'],
-  },
-]
-
-function getMockResponse(text) {
-  const lower = text.toLowerCase()
-  for (const r of MOCK_RESPONSES) {
-    if (r.keywords.some((k) => lower.includes(k))) return r
-  }
-  return {
-    verdict: 'unverified',
-    confidence: 51,
-    explanation:
-      'Não foi possível confirmar ou refutar essa afirmação com alta confiança. As fontes consultadas apresentam informações inconclusivas ou contraditórias. Recomenda-se verificar em fontes primárias.',
-    sources: ['Fact-Check API', 'ML Fallback'],
-  }
+function mapVerdict(verdict) {
+  if (verdict === 'false') return 'fake'
+  if (verdict === 'uncertain') return 'unverified'
+  return 'true'
 }
 
 export function useFakeChecker() {
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
-  const check = useCallback(async (statement) => {
-    setMessages((prev) => [...prev, { role: 'user', text: statement }])
+  const check = useCallback(async (query) => {
+    if (!query || query.length > 2048) return
+
+    setMessages((prev) => [...prev, { role: 'user', text: query }])
     setLoading(true)
+    setError(null)
 
-    await new Promise((r) => setTimeout(r, 800 + Math.random() * 600))
-
-    let result
     try {
       const res = await fetch(API_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ statement }),
+        body: JSON.stringify({ query }),
       })
-      if (res.ok) {
-        const data = await res.json()
-        result = {
-          verdict:     data.verdict     || 'unverified',
-          confidence:  Math.round((data.confidence || 0.5) * 100),
-          explanation: data.explanation || 'Resultado retornado pela API.',
-          sources:     data.sources     || ['Fact-Check API'],
-        }
-      } else {
-        result = getMockResponse(statement)
-      }
-    } catch {
-      result = getMockResponse(statement)
-    }
 
-    setMessages((prev) => [
-      ...prev,
-      { role: 'bot', statement, result },
-    ])
-    setLoading(false)
+      const body = await res.json()
+
+      if (!res.ok) {
+        throw new Error(body.message || `Erro ${res.status}`)
+      }
+
+      const { verdict, confidence, source, url } = body.data
+
+      const result = {
+        verdict:     mapVerdict(verdict),
+        confidence:  Math.round(confidence * 100),
+        explanation: url
+          ? `Fonte consultada: ${url}`
+          : 'Resultado gerado pelo modelo de machine learning.',
+        sources:     [source === 'fact_api' ? 'Fact-Check API' : 'ML Model'],
+        status:      body.status,
+        id:          body.id,
+      }
+
+      setMessages((prev) => [...prev, { role: 'bot', statement: query, result }])
+    } catch (err) {
+      setError(err.message)
+      setMessages((prev) => prev.slice(0, -1))
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
-  return { messages, loading, check }
+  return { messages, loading, error, check }
 }

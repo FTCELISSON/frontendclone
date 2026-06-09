@@ -13,9 +13,11 @@ export default function ChatMessage({ message }) {
       </div>
       <div className={`${styles.bubble} ${isBot ? styles.bubbleBot : styles.bubbleUser}`}>
         {isBot
-          ? <VerdictCard statement={statement} result={result} />
-          : text
-        }
+       ? result
+        ? <VerdictCard statement={statement} result={result} />
+         : <span className={styles.loading}>Analisando...</span>
+         : text
+         }
       </div>
     </div>
   )

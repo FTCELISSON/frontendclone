@@ -3,9 +3,9 @@ import { useState, useCallback } from 'react'
 const API_ENDPOINT = `${import.meta.env.VITE_API_URL}/v1/check`
 
 function mapVerdict(verdict) {
-  if (verdict === 'false') return 'fake'
-  if (verdict === 'uncertain') return 'unverified'
-  return 'true'
+  if (verdict === 'true') return 'Verdadeiro'
+  if (verdict === 'false') return 'Fake News'
+  return verdict
 }
 
 export function useFakeChecker() {

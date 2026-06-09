@@ -1,10 +1,10 @@
 import styles from './VerdictCard.module.css'
 
 const CONFIG = {
-  fake:       { icon: '✕', label: 'Fake News' },
-  true:       { icon: '✓', label: 'Verdadeiro' },
-  unverified: { icon: '?', label: 'Incerto' },
+  'Verdadeiro':        { icon: '✓', color: 'true' },
+  'Fake News':         { icon: '✕', color: 'fake' },
 }
+const { icon, color } = CONFIG[verdict] || { icon: '?', color: 'unverified' }
 
 export default function VerdictCard({ statement, result }) {
   const { verdict, confidence, explanation, sources } = result

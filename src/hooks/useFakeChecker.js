@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 
-const API_ENDPOINT = `${import.meta.env.VITE_API_URL}/v1/check`
+const API_ENDPOINT = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/v1/check`
 
 function mapVerdict(verdict) {
   if (verdict === 'true') return 'Verdadeiro'

@@ -3,7 +3,7 @@ import styles from './VerdictCard.module.css'
 
 const CONFIG = {
   'Verdadeiro': { icon: '✓', color: 'true' },
-  'Fake News':  { icon: '✕', color: 'fake' },
+  'Fake News': { icon: '✕', color: 'fake' },
 }
 
 export default function VerdictCard({ statement, result }) {
